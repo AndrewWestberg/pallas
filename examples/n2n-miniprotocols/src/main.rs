@@ -56,21 +56,21 @@ async fn do_chainsync(peer: &mut PeerClient) {
 
 #[tokio::main]
 async fn main() {
-    tracing::subscriber::set_global_default(
-        tracing_subscriber::FmtSubscriber::builder()
-            .with_max_level(tracing::Level::TRACE)
-            .finish(),
-    )
-    .unwrap();
+    // tracing::subscriber::set_global_default(
+    //     tracing_subscriber::FmtSubscriber::builder()
+    //         .with_max_level(tracing::Level::TRACE)
+    //         .finish(),
+    // )
+    // .unwrap();
 
     // setup a TCP socket to act as data bearer between our agents and the remote
     // relay.
-    let mut peer = PeerClient::connect("relays-new.cardano-mainnet.iohk.io:3001", MAINNET_MAGIC)
+    let mut peer = PeerClient::connect("localhost:3000", MAINNET_MAGIC)
         .await
         .unwrap();
 
     // fetch an arbitrary batch of block
-    do_blockfetch(&mut peer).await;
+    //do_blockfetch(&mut peer).await;
 
     // execute the chainsync flow from an arbitrary point in the chain
     do_chainsync(&mut peer).await;

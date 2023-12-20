@@ -18,8 +18,11 @@ use pallas_network::miniprotocols::{
 };
 use pallas_network::miniprotocols::{handshake, localstate, txsubmission, MAINNET_MAGIC};
 use pallas_network::multiplexer::{Bearer, Plexer};
+use std::net::TcpListener;
 use std::path::Path;
-use tokio::net::{TcpListener, UnixListener};
+
+#[cfg(unix)]
+use std::os::unix::net::UnixListener;
 
 #[tokio::test]
 #[ignore]
@@ -178,9 +181,8 @@ pub async fn blockfetch_server_and_client_happy_path() {
         async move {
             // server setup
 
-            let server_listener = TcpListener::bind(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 30001))
-                .await
-                .unwrap();
+            let server_listener =
+                TcpListener::bind(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 30001)).unwrap();
 
             let mut peer_server = PeerServer::accept(&server_listener, 0).await.unwrap();
 
@@ -269,11 +271,10 @@ pub async fn chainsync_server_and_client_happy_path_n2n() {
         async move {
             // server setup
 
-            let server_listener = TcpListener::bind(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 30001))
-                .await
-                .unwrap();
+            let server_listener =
+                TcpListener::bind(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 30001)).unwrap();
 
-            let (bearer, _) = Bearer::accept_tcp(&server_listener).await.unwrap();
+            let (bearer, _) = Bearer::accept_tcp(&server_listener).unwrap();
 
             let mut server_plexer = Plexer::new(bearer);
 
@@ -281,7 +282,7 @@ pub async fn chainsync_server_and_client_happy_path_n2n() {
                 handshake::Server::new(server_plexer.subscribe_server(0));
             let mut server_cs = chainsync::N2NServer::new(server_plexer.subscribe_server(2));
 
-            tokio::spawn(async move { server_plexer.run().await });
+            let server_plexer = server_plexer.spawn();
 
             server_hs.receive_proposed_versions().await.unwrap();
             server_hs
