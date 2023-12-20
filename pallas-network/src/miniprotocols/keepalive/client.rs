@@ -110,9 +110,7 @@ impl Client {
         self.0 = State::Server;
         debug!("sent keepalive message with cookie {}", cookie);
 
-        self.recv_while_sending_keepalive().await?;
-
-        Ok(())
+        self.recv_while_sending_keepalive().await
     }
 
     async fn recv_while_sending_keepalive(&mut self) -> Result<(), Error> {

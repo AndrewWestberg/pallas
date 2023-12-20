@@ -37,10 +37,10 @@ async fn do_chainsync(peer: &mut PeerClient) {
     info!("intersected point is {:?}", point);
 
     let mut keepalive_timer = Instant::now();
-    for _ in 0..10 {
-        if keepalive_timer.elapsed().as_secs() > 20 {
-            peer.keepalive().send_keepalive().await.unwrap();
-            keepalive_timer = Instant::now();
+    for _ in 0..100000 {
+        if keepalive_timer.elapsed().as_secs() > 1 {
+           peer.keepalive().send_keepalive().await.unwrap();
+           keepalive_timer = Instant::now();
         }
         let next = peer.chainsync().request_next().await.unwrap();
 
@@ -56,12 +56,12 @@ async fn do_chainsync(peer: &mut PeerClient) {
 
 #[tokio::main]
 async fn main() {
-    // tracing::subscriber::set_global_default(
-    //     tracing_subscriber::FmtSubscriber::builder()
-    //         .with_max_level(tracing::Level::TRACE)
-    //         .finish(),
-    // )
-    // .unwrap();
+    tracing::subscriber::set_global_default(
+        tracing_subscriber::FmtSubscriber::builder()
+            .with_max_level(tracing::Level::TRACE)
+            .finish(),
+    )
+    .unwrap();
 
     // setup a TCP socket to act as data bearer between our agents and the remote
     // relay.

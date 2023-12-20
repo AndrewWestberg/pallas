@@ -8,7 +8,7 @@ use std::{
         atomic::{AtomicBool, Ordering},
         Arc,
     },
-    thread::JoinHandle, net::ToSocketAddrs,
+    thread::JoinHandle, net::SocketAddr, time::Duration,
 };
 use thiserror::Error;
 use tokio::sync::mpsc::error::SendError;
@@ -87,12 +87,14 @@ impl Bearer {
         Ok(Self::Tcp(stream))
     }
 
-    pub async fn connect_tcp_timeout(addr: impl ToSocketAddrs, timeout: std::time::Duration) -> Result<Self, tokio::io::Error> {
-        match tokio::time::timeout(timeout, Self::connect_tcp(addr)).await {
-            Ok(Ok(stream)) => Ok(stream),
-            Ok(Err(err)) => Err(err),
-            Err(_) => Err(tokio::io::Error::new(tokio::io::ErrorKind::TimedOut, "connection timed out")),
-        }
+    pub fn connect_tcp_timeout(
+        addr: &SocketAddr,
+        timeout: Duration,
+    ) -> Result<Self, std::io::Error> {
+        let bearer = tcp::TcpStream::connect_timeout(addr, timeout)?;
+        bearer.set_nodelay(true)?;
+
+        Ok(Bearer::Tcp(bearer))
     }
 
     pub fn accept_tcp(listener: &tcp::TcpListener) -> IOResult<(Self, tcp::SocketAddr)> {
