@@ -72,7 +72,7 @@ pub enum Bearer {
     NamedPipe(NamedPipeClient),
 }
 
-const BUFFER_LEN: usize = 1024 * 10;
+const BUFFER_LEN: usize = 1024 * 100;
 
 impl Bearer {
     pub async fn connect_tcp(addr: impl ToSocketAddrs) -> Result<Self, tokio::io::Error> {
